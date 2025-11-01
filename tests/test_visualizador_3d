@@ -1,78 +1,120 @@
 """
-Testes para o Visualizador3D
+Testes para o módulo Visualizador3D
+
+Testes unitários e de integração para garantir o funcionamento correto
+do visualizador 3D de G-code.
 """
 
 import unittest
 import sys
 import os
+import tempfile
 
-# Adiciona o diretório pai ao path para importar os módulos
+# Configura caminho para importar módulos do projeto
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
     from gerador_analisador.visualizador_3d import Visualizador3D
     VISUALIZADOR_DISPONIVEL = True
-except ImportError:
+except ImportError as e:
+    print(f"⚠️ Aviso: Visualizador3D não disponível para testes: {e}")
     VISUALIZADOR_DISPONIVEL = False
 
 @unittest.skipIf(not VISUALIZADOR_DISPONIVEL, "Visualizador3D não disponível")
 class TestVisualizador3D(unittest.TestCase):
+    """
+    Casos de teste para a classe Visualizador3D.
+    
+    Testa funcionalidades de parsing, visualização e tratamento de erros.
+    """
     
     def setUp(self):
-        """Configuração antes de cada teste"""
-        self.gcode_simples = """
-G21 ; Unidades em mm
+        """Configura ambiente de teste antes de cada caso."""
+        self.gcode_basico = """
+G21 ; Unidades em milímetros
 G90 ; Posicionamento absoluto
-G0 X0 Y0 Z5
-G1 Z0 F1000
-G1 X10 Y0 Z0
-G1 X10 Y10 Z2
-G1 X0 Y10 Z0
+G0 X0 Y0 Z5 ; Movimento rápido para posição inicial
+G1 Z0 F1000 ; Descida para altura de trabalho
+G1 X10 Y0 Z0 ; Movimento de trabalho
+G1 X10 Y10 Z2 ; Movimento com variação de Z
+G1 X0 Y10 Z0 ; Retorno
+G1 X0 Y0 Z0 ; Volta ao início
+G0 Z5 ; Retorna para altura segura
+M30 ; Fim do programa
+"""
+        
+        self.gcode_complexo = """
+G21
+G90
+G0 X0 Y0 Z10
+G1 Z0 F500
+G1 X20 Y0 Z0
+G1 X20 Y15 Z1
+G1 X0 Y15 Z0
 G1 X0 Y0 Z0
-G0 Z5
+G0 X-5 Y-5 Z10
+G1 Z0
+G1 X25 Y-5 Z0
+G1 X25 Y20 Z2
+G1 X-5 Y20 Z0
+G1 X-5 Y-5 Z0
+G0 Z10
 M30
 """
     
     def test_parse_gcode_basico(self):
-        """Testa o parsing de G-code básico"""
+        """Testa parsing de G-code básico com movimentos mistos."""
         visualizador = Visualizador3D(None)
-        coordenadas = visualizador.parse_gcode(self.gcode_simples)
+        coordenadas = visualizador.parse_gcode(self.gcode_basico)
         
+        self.assertIsInstance(coordenadas, list)
         self.assertGreater(len(coordenadas), 0, "Deveria encontrar coordenadas")
         
-        # Verifica se tem movimentos rápidos e de trabalho
+        # Verifica estrutura dos dados
+        for coord in coordenadas:
+            self.assertIn('pos', coord)
+            self.assertIn('extruding', coord)
+            self.assertIn('line_number', coord)
+            self.assertEqual(len(coord['pos']), 3)  # X, Y, Z
+    
+    def test_parse_gcode_tipos_movimento(self):
+        """Testa diferenciação entre movimentos rápidos e de trabalho."""
+        visualizador = Visualizador3D(None)
+        coordenadas = visualizador.parse_gcode(self.gcode_basico)
+        
         movimentos_rapidos = [c for c in coordenadas if not c['extruding']]
         movimentos_trabalho = [c for c in coordenadas if c['extruding']]
         
-        self.assertGreater(len(movimentos_rapidos), 0, "Deveria ter movimentos rápidos")
-        self.assertGreater(len(movimentos_trabalho), 0, "Deveria ter movimentos de trabalho")
+        self.assertGreater(len(movimentos_rapidos), 0, 
+                          "Deveria identificar movimentos rápidos (G0)")
+        self.assertGreater(len(movimentos_trabalho), 0, 
+                          "Deveria identificar movimentos de trabalho (G1)")
     
     def test_parse_gcode_vazio(self):
-        """Testa parsing de G-code vazio"""
+        """Testa comportamento com G-code vazio."""
         visualizador = Visualizador3D(None)
         coordenadas = visualizador.parse_gcode("")
         
-        self.assertEqual(len(coordenadas), 0, "Não deveria encontrar coordenadas em G-code vazio")
+        self.assertEqual(len(coordenadas), 0, 
+                        "Não deveria encontrar coordenadas em G-code vazio")
     
-    def test_parse_gcode_com_comentarios(self):
-        """Testa parsing de G-code com comentários"""
-        gcode_com_comentarios = """
-; Início do programa
-G21 ; Unidades mm
-G0 X0 Y0 Z5 ; Move para posição inicial
-; Movimento de trabalho
-G1 X10 Y10 Z0 F1000
-; Fim do programa
-M30
+    def test_parse_gcode_apenas_comentarios(self):
+        """Testa parsing de G-code contendo apenas comentários."""
+        gcode_comentarios = """
+; Este é um arquivo apenas com comentários
+; G1 X10 Y10 Z0
+; M30
 """
         visualizador = Visualizador3D(None)
-        coordenadas = visualizador.parse_gcode(gcode_com_comentarios)
+        coordenadas = visualizador.parse_gcode(gcode_comentarios)
         
-        self.assertGreater(len(coordenadas), 0, "Deveria encontrar coordenadas mesmo com comentários")
+        self.assertEqual(len(coordenadas), 0,
+                        "Não deveria encontrar coordenadas em comentários")
     
     def test_parse_gcode_coordenadas_negativas(self):
-        """Testa parsing de coordenadas negativas"""
+        """Testa parsing de coordenadas negativas."""
         gcode_negativo = """
+G21
 G0 X-10 Y-5 Z5
 G1 X-5 Y-10 Z0
 G1 X0 Y0 Z0
@@ -80,18 +122,18 @@ G1 X0 Y0 Z0
         visualizador = Visualizador3D(None)
         coordenadas = visualizador.parse_gcode(gcode_negativo)
         
-        self.assertGreater(len(coordenadas), 0, "Deveria processar coordenadas negativas")
+        self.assertGreater(len(coordenadas), 0,
+                          "Deveria processar coordenadas negativas")
         
-        # Verifica se as coordenadas negativas foram parseadas corretamente
-        for coord in coordenadas:
-            x, y, z = coord['pos']
-            self.assertIsInstance(x, float, "Coordenada X deve ser float")
-            self.assertIsInstance(y, float, "Coordenada Y deve ser float")
-            self.assertIsInstance(z, float, "Coordenada Z deve ser float")
+        # Verifica valores negativos
+        coordenadas_negativas = [c for c in coordenadas if any(p < 0 for p in c['pos'])]
+        self.assertGreater(len(coordenadas_negativas), 0,
+                          "Deveria encontrar coordenadas negativas")
     
     def test_parse_gcode_sem_coordenadas_z(self):
-        """Testa parsing de G-code sem coordenadas Z"""
+        """Testa parsing de comandos sem coordenada Z."""
         gcode_sem_z = """
+G21
 G0 X0 Y0
 G1 X10 Y10
 G1 X20 Y20
@@ -99,62 +141,191 @@ G1 X20 Y20
         visualizador = Visualizador3D(None)
         coordenadas = visualizador.parse_gcode(gcode_sem_z)
         
-        self.assertGreater(len(coordenadas), 0, "Deveria processar G-code sem coordenadas Z")
+        self.assertGreater(len(coordenadas), 0,
+                          "Deveria processar comandos sem coordenada Z")
         
-        # Verifica se mantém o Z anterior
+        # Verifica que Z mantém valor anterior (0.0 por padrão)
         for coord in coordenadas:
             x, y, z = coord['pos']
             self.assertEqual(z, 0.0, "Deveria manter Z=0 quando não especificado")
+    
+    def test_parse_gcode_multiplicas_linhas(self):
+        """Testa parsing com múltiplos comandos por linha."""
+        gcode_multiplo = "G21 G90 G0 X0 Y0 Z5 G1 Z0 G1 X10 Y10"
+        visualizador = Visualizador3D(None)
+        coordenadas = visualizador.parse_gcode(gcode_multiplo)
+        
+        # Deve processar apenas o primeiro comando por linha
+        self.assertGreater(len(coordenadas), 0,
+                          "Deveria processar pelo menos alguns comandos")
 
 class TestVisualizadorDependencias(unittest.TestCase):
-    """Testa se as dependências do visualizador estão disponíveis"""
+    """
+    Testes de verificação de dependências do visualizador.
+    
+    Garante que todas as bibliotecas necessárias estão disponíveis.
+    """
     
     def test_import_matplotlib(self):
-        """Testa se matplotlib está disponível"""
+        """Verifica se matplotlib está disponível."""
         try:
             import matplotlib
             import matplotlib.pyplot as plt
-            self.assertTrue(True, "matplotlib está disponível")
-        except ImportError:
-            self.fail("matplotlib não está instalado")
+            # Teste básico de funcionalidade
+            self.assertTrue(hasattr(plt, 'plot'))
+            self.assertTrue(hasattr(plt, 'Figure'))
+        except ImportError as e:
+            self.fail(f"matplotlib não está disponível: {e}")
     
     def test_import_numpy(self):
-        """Testa se numpy está disponível"""
+        """Verifica se numpy está disponível."""
         try:
             import numpy as np
-            self.assertTrue(True, "numpy está disponível")
-        except ImportError:
-            self.fail("numpy não está instalado")
+            # Teste básico de funcionalidade
+            arr = np.array([1, 2, 3])
+            self.assertEqual(len(arr), 3)
+            self.assertEqual(arr.dtype, np.int64)
+        except ImportError as e:
+            self.fail(f"numpy não está disponível: {e}")
     
     def test_import_pillow(self):
-        """Testa se Pillow está disponível"""
+        """Verifica se Pillow está disponível."""
         try:
             from PIL import Image, ImageTk
-            self.assertTrue(True, "Pillow está disponível")
-        except ImportError:
-            self.fail("Pillow não está instalado")
+            # Teste básico de funcionalidade
+            self.assertTrue(hasattr(Image, 'new'))
+        except ImportError as e:
+            self.fail(f"Pillow não está disponível: {e}")
+    
+    def test_import_opencv(self):
+        """Verifica se OpenCV está disponível."""
+        try:
+            import cv2
+            # Teste básico de funcionalidade
+            self.assertTrue(hasattr(cv2, 'imread'))
+        except ImportError as e:
+            self.fail(f"OpenCV não está disponível: {e}")
+
+class TestVisualizadorIntegracao(unittest.TestCase):
+    """
+    Testes de integração do visualizador com dados reais.
+    """
+    
+    @unittest.skipIf(not VISUALIZADOR_DISPONIVEL, "Visualizador3D não disponível")
+    def test_plotagem_gcode_valido(self):
+        """Testa a plotagem completa de G-code válido."""
+        gcode_valido = """
+G21
+G90
+G0 X0 Y0 Z5
+G1 Z0 F1000
+G1 X10 Y0 Z0
+G1 X10 Y10 Z0
+G1 X0 Y10 Z0
+G1 X0 Y0 Z0
+G0 Z5
+M30
+"""
+        # Este teste verifica que a plotagem não gera erros
+        # A validação visual fica a cargo do usuário
+        visualizador = Visualizador3D(None)
+        
+        # Não deve gerar exceções
+        try:
+            visualizador.plot_gcode(gcode_valido)
+            plotagem_ok = True
+        except Exception as e:
+            plotagem_ok = False
+            print(f"Erro na plotagem: {e}")
+        
+        self.assertTrue(plotagem_ok, "Plotagem deveria completar sem erros")
+
+def executar_testes_visuais():
+    """
+    Função para executar testes visuais manuais do visualizador.
+    Útil para desenvolvimento e debug.
+    """
+    if not VISUALIZADOR_DISPONIVEL:
+        print("❌ Visualizador3D não disponível para testes visuais")
+        return
+    
+    print("🎨 EXECUTANDO TESTES VISUAIS DO VISUALIZADOR 3D")
+    print("=" * 50)
+    
+    # G-codes de teste
+    testes = {
+        "Quadrado Simples": """
+G21
+G90
+G0 X0 Y0 Z5
+G1 Z0 F1000
+G1 X10 Y0 Z0
+G1 X10 Y10 Z0
+G1 X0 Y10 Z0
+G1 X0 Y0 Z0
+G0 Z5
+M30
+""",
+        "Padrão Complexo": """
+G21
+G90
+G0 X0 Y0 Z10
+G1 Z0 F500
+G1 X20 Y0 Z0
+G1 X20 Y15 Z1
+G1 X0 Y15 Z0
+G1 X0 Y0 Z0
+G0 Z10
+G0 X5 Y5 Z10
+G1 Z0
+G1 X15 Y5 Z0.5
+G1 X15 Y10 Z1.5
+G1 X5 Y10 Z0.5
+G1 X5 Y5 Z0
+G0 Z10
+M30
+"""
+    }
+    
+    for nome, gcode in testes.items():
+        print(f"📊 Teste Visual: {nome}")
+        try:
+            visualizador = Visualizador3D(None)
+            visualizador.plot_gcode(gcode)
+            print(f"   ✅ {nome}: PLOTAGEM BEM-SUCEDIDA")
+        except Exception as e:
+            print(f"   ❌ {nome}: ERRO - {e}")
 
 def suite():
-    """Cria a suite de testes"""
+    """Cria e retorna a suite completa de testes."""
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestVisualizador3D))
     suite.addTest(unittest.makeSuite(TestVisualizadorDependencias))
+    suite.addTest(unittest.makeSuite(TestVisualizadorIntegracao))
     return suite
 
 if __name__ == '__main__':
-    # Executa os testes
+    # Executa os testes automatizados
+    print("🧪 INICIANDO TESTES DO VISUALIZADOR 3D")
+    print("=" * 50)
+    
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite())
     
-    # Mostra resumo
-    print(f"\n{'='*50}")
-    print(f"TESTES DO VISUALIZADOR 3D - RESUMO")
-    print(f"{'='*50}")
-    print(f"✓ Testes executados: {result.testsRun}")
-    print(f"✓ Falhas: {len(result.failures)}")
-    print(f"✓ Erros: {len(result.errors)}")
-    print(f"{'='*50}")
+    # Relatório final
+    print("\n" + "=" * 50)
+    print("📊 RELATÓRIO FINAL DE TESTES")
+    print("=" * 50)
+    print(f"✅ Testes executados: {result.testsRun}")
+    print(f"⚠️  Falhas: {len(result.failures)}")
+    print(f"❌ Erros: {len(result.errors)}")
+    print(f"⏩ Pulados: {result.testsRun - len(result.failures) - len(result.errors)}")
+    print("=" * 50)
     
-    if not result.wasSuccessful():
-        sys.exit(1)
-        
+    # Executa testes visuais se solicitado
+    if '--visual' in sys.argv:
+        executar_testes_visuais()
+    
+    # Retorna código de saída apropriado
+    sys.exit(0 if result.wasSuccessful() else 1)
+    
