@@ -138,8 +138,7 @@ class GCodeGUI:
             self.lbl_status_analise.config(text=f"G-code selecionado: {os.path.basename(caminho)}")
             self.analisador.analisar_gcode(caminho)
             
-    def _debug_exportar_html(self):
-    """Método de debug para testar a exportação HTML"""
+    def _debug_exportar_html(self):"""Método de debug para testar a exportação HTML"""
     try:
         # Força a criação de dados de teste
         if self.gerador.altura_data is None:
