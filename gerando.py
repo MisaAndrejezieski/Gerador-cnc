@@ -1,12 +1,11 @@
 """
 gerador_analisador_definitivo_gui.py
 Autor: Misael Andrejezieski + GPT-5
-Versão: 4.1
+Versão: 4.2
 Descrição:
  - Gerador e analisador de G-code CNC
  - Altura baseada em cores (branco=0 mm, preto=6 mm)
- - Exporta simulador 3D HTML interativo
- - Salvar/Carregar configuração
+ - Exporta simulador 3D HTML interativo automaticamente em Imagens/
 """
 
 import tkinter as tk
@@ -107,10 +106,16 @@ class GeradorGCode:
             messagebox.showerror("Erro", f"Falha ao salvar G-code: {e}")
             return False
 
-    def exportar_simulador_html(self, caminho_html):
+    def exportar_simulador_html(self):
         if self.altura_data is None:
             messagebox.showwarning("Aviso", "Trate a imagem antes de exportar o simulador!")
             return False
+
+        # Cria pasta Imagens na raiz
+        pasta_imagens = os.path.join(os.getcwd(), "Imagens")
+        os.makedirs(pasta_imagens, exist_ok=True)
+        caminho_html = os.path.join(pasta_imagens, "simulador.html")
+
         html_template = f"""<!DOCTYPE html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><title>Simulador 3D</title>
 <style>body{{margin:0;overflow:hidden;}}canvas{{display:block;}}</style></head><body>
@@ -140,6 +145,7 @@ const axesHelper = new THREE.AxesHelper(Math.max(rows,cols)); scene.add(axesHelp
 function animate(){{requestAnimationFrame(animate); renderer.render(scene,camera);}} animate();
 window.addEventListener('resize',()=>{{camera.aspect=window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight);}});
 </script></body></html>"""
+
         try:
             with open(caminho_html,"w",encoding="utf-8") as f:
                 f.write(html_template)
@@ -227,13 +233,7 @@ def gerar_gcode_gui():
             analisador.analisar_gcode(caminho)
 
 def exportar_simulador_gui():
-    caminho = filedialog.asksaveasfilename(
-        title="Salvar Simulador HTML",
-        defaultextension=".html",
-        filetypes=[("HTML","*.html")]
-    )
-    if caminho:
-        gerador.exportar_simulador_html(caminho)
+    gerador.exportar_simulador_html()
 
 def selecionar_gcode_gui():
     caminho = filedialog.askopenfilename(
