@@ -46,7 +46,6 @@ class GCodeGUI:
         # Configurações
         frame_config = ttk.Frame(frame_gerar)
         frame_config.pack(fill="x", pady=5)
-        
         ttk.Label(frame_config, text="Passo (mm):").grid(row=0, column=0, sticky="w")
         self.entry_passo = ttk.Entry(frame_config, width=10)
         self.entry_passo.insert(0, "1.0")
