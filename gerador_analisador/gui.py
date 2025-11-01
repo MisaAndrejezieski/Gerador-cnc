@@ -9,6 +9,11 @@ from PIL import Image, ImageTk
 import json
 from visualizador_3d import Visualizador3D
 
+try:
+    from .visualizador_3d import Visualizador3D
+except ImportError:
+    # Fallback para importação absoluta
+    from visualizador_3d import Visualizador3D
 
 # Importações locais - CORRIGIDAS
 try:
