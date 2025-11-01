@@ -1,0 +1,19 @@
+Gerador-cnc/
+├── 📁 .venv/                          # Ambiente virtual Python
+├── 📁 gerador_analisador/             # Pacote principal
+│   ├── 📄 __init__.py                 # Inicialização do pacote
+│   ├── 📄 analisador.py               # Módulo de análise de G-code
+│   ├── 📄 gerador.py                  # Módulo de geração de G-code
+│   ├── 📄 gui.py                      # Interface gráfica principal
+│   └── 📄 visualizador_3d.py          # NOVO: Visualizador 3D integrado
+├── 📁 testes/                         # Suite de testes
+│   ├── 📄 __init__.py                 # Inicialização dos testes
+│   ├── 📄 test_analisador.py          # Testes do analisador
+│   ├── 📄 test_gerador.py             # Testes do gerador
+│   └── 📄 test_visualizador.py        # NOVO: Testes do visualizador 3D
+├── 📁 Images/                         # Diretório para imagens de exemplo
+├── 📄 .gitattributes                  # Configurações do Git
+├── 📄 config.json                     # Configurações da aplicação
+├── 📄 README.md                       # Documentação do projeto
+├── 📄 requirements.txt                # Dependências do projeto
+└── 📄 run.py                          # Script de inicialização
