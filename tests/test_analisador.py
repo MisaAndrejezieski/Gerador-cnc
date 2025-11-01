@@ -5,10 +5,11 @@ Testes unitários para o módulo AnalisadorGCode
 import unittest
 import tempfile
 import os
-
-# Importa o módulo a ser testado
 import sys
-sys.path.append('src')
+
+# Adiciona o diretório src ao path para importações
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 from analisador import AnalisadorGCode
 
 class TestAnalisadorGCode(unittest.TestCase):
@@ -22,7 +23,7 @@ class TestAnalisadorGCode(unittest.TestCase):
     def criar_gcode_teste(self, conteudo):
         """Cria arquivo G-code temporário para testes"""
         caminho = os.path.join(self.temp_dir, "teste.gcode")
-        with open(caminho, 'w') as f:
+        with open(caminho, 'w', encoding='utf-8') as f:
             f.write(conteudo)
         return caminho
         
