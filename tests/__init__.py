@@ -6,5 +6,5 @@ e o funcionamento correto de todas as funcionalidades.
 """
 
 __version__ = "1.0.0"
-__author__ = "Equipe de Desenvolvimento"
+__author__ = "Misael Andrejezieski."
 __description__ = "Testes automatizados para o sistema CNC"
