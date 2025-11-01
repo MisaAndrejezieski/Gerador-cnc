@@ -3,15 +3,25 @@
         "altura_seguranca_z": 5.0,
         "profundidade_max_corte": 0.5,
         "diametro_ferramenta": 0.4,
-        "velocidade_f_corte": 600.0,
-        "velocidade_f_rapida": 3000.0
-    },
-    "visualizador": {
-        "cor_g0": "gray",
-        "cor_g1": "blue",
-        "escala_plotagem": 1.0 
+        "velocidade_f_corte": 800.0,
+        "velocidade_f_rapida": 3500.0,
+        "passos_por_mm": 10.0,
+        "limiar_preto_branco": 128
     },
     "analisador": {
         "tolerancia_flutuante": 1e-4
+    },
+    "visualizador": {
+        "cor_g0": "#888888",
+        "cor_g1": "#007acc",
+        "escala_plotagem": 1.0 
+    },
+    "gui": {
+        "tamanho_janela": "1200x800",
+        "last_dir": "."
+    },
+    "log": {
+        "nivel": "INFO",
+        "arquivo": "cnc_pro.log"
     }
 }
