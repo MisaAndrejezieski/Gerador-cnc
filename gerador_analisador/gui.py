@@ -27,7 +27,7 @@ class GCodeGUI:
         # Configuração da janela principal
         self.janela = tk.Tk()
         self.janela.title("Gerador e Analisador de G-code CNC v1.0")
-        self.janela.geometry("500x600")
+        self.janela.geometry("500x650")  # Aumentei a altura para caber o novo botão
         
         self._criar_interface()
     
@@ -59,6 +59,10 @@ class GCodeGUI:
         
         self.btn_exportar_sim = ttk.Button(frame_gerar, text="🌐 Exportar Simulador 3D", command=self._exportar_simulador, width=25, state="disabled")
         self.btn_exportar_sim.pack(pady=5)
+
+        # NOVO BOTÃO: Visualizar G-code 3D
+        self.btn_visualizar_3d = ttk.Button(frame_gerar, text="👁️ Visualizar G-code 3D", command=self._visualizar_gcode_3d, width=25, state="disabled")
+        self.btn_visualizar_3d.pack(pady=5)
         
         # Status da geração
         self.lbl_status_gerar = ttk.Label(frame_gerar, text="Aguardando imagem...", foreground="gray")
@@ -77,6 +81,43 @@ class GCodeGUI:
         # Barra de status
         self.status_bar = ttk.Label(self.janela, text="Pronto | Gerador e Analisador de G-code CNC v1.0", relief="sunken", anchor="w")
         self.status_bar.pack(side="bottom", fill="x")
+
+    # NOVO MÉTODO: Visualizar G-code em 3D
+    def _visualizar_gcode_3d(self):
+        """Visualiza o G-code em 3D"""
+        try:
+            # Verifica se há G-code gerado
+            if not hasattr(self.gerador, 'gcode_gerado') or not self.gerador.gcode_gerado:
+                messagebox.showwarning("Aviso", "Gere um G-code primeiro antes de visualizar!")
+                return
+            
+            # Cria nova janela para visualização 3D
+            janela_3d = tk.Toplevel(self.janela)
+            janela_3d.title("Visualização 3D do G-code")
+            janela_3d.geometry("1000x800")
+            
+            # Inicializa o visualizador
+            visualizador = Visualizador3D(janela_3d)
+            
+            # Obtém o G-code gerado (ajuste conforme sua implementação)
+            gcode_text = self.gerador.gcode_gerado  # Ou outro atributo onde você armazena o G-code
+            
+            # Se não tiver o G-code em memória, tenta ler do arquivo
+            if not gcode_text and hasattr(self.gerador, 'ultimo_arquivo'):
+                try:
+                    with open(self.gerador.ultimo_arquivo, 'r', encoding='utf-8') as f:
+                        gcode_text = f.read()
+                except:
+                    pass
+            
+            if gcode_text:
+                visualizador.plot_gcode(gcode_text)
+                self.status_bar.config(text="Visualização 3D aberta - Use mouse para rotacionar e zoom")
+            else:
+                messagebox.showerror("Erro", "Não foi possível encontrar o G-code para visualizar")
+                
+        except Exception as e:
+            messagebox.showerror("Erro", f"Falha ao abrir visualizador 3D: {e}")
     
     def _carregar_imagem(self):
         """Carrega e processa imagem"""
@@ -96,6 +137,7 @@ class GCodeGUI:
                         
                         self.btn_gerar.config(state="normal")
                         self.btn_exportar_sim.config(state="normal")
+                        self.btn_visualizar_3d.config(state="normal")  # Habilita o novo botão
                         
                         self.lbl_status_gerar.config(text=f"Imagem carregada: {os.path.basename(caminho)}")
                         self.status_bar.config(text=f"Imagem carregada: {os.path.basename(caminho)}")
@@ -122,6 +164,8 @@ class GCodeGUI:
         if caminho and self.gerador.gerar_gcode(caminho):
             self.lbl_status_gerar.config(text=f"G-code salvo: {os.path.basename(caminho)}")
             self.analisador.analisar_gcode(caminho)
+            # Habilita o botão de visualização 3D após gerar G-code
+            self.btn_visualizar_3d.config(state="normal")
     
     def _exportar_simulador(self):
         """Exporta simulador 3D"""
@@ -138,6 +182,8 @@ class GCodeGUI:
         if caminho:
             self.lbl_status_analise.config(text=f"G-code selecionado: {os.path.basename(caminho)}")
             self.analisador.analisar_gcode(caminho)
+            # Habilita visualização 3D também para G-codes carregados
+            self.btn_visualizar_3d.config(state="normal")
     
     def executar(self):
         """Inicia a aplicação"""
