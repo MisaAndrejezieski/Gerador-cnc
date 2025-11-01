@@ -1,6 +1,5 @@
 """
 Script de inicialização da aplicação Gerador e Analisador CNC Pro.
-Carrega configurações, inicializa o logger e inicia a GUI.
 """
 
 import os
@@ -30,6 +29,7 @@ def load_config():
 
 def main():
     """Função principal para iniciar a aplicação GUI."""
+    
     # 1. Carregar Configurações
     config = load_config()
     
@@ -44,6 +44,8 @@ def main():
         app.executar()
     except Exception as e:
         logger.critical(f"Erro fatal ao iniciar a aplicação: {e}", exc_info=True)
+        # Se a GUI falhar, printa o erro final para o usuário
+        print(f"Erro fatal: {e}") 
         sys.exit(1)
 
 if __name__ == "__main__":
