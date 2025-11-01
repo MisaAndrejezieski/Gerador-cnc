@@ -1,10 +1,11 @@
 """
 gerador.py — Geração de relevo 3D (heightmap) e G-code para CNC
 Autor: Misael Andrejezieski + GPT-5
-Versão: 1.0
+Versão: 1.1
 Descrição:
  - Converte imagens em relevo 3D com tratamento automático.
  - Gera o G-code pronto para usinagem CNC.
+ - Integra análise de G-code com estatísticas e gráficos.
 """
 
 import tkinter as tk
@@ -12,6 +13,8 @@ from tkinter import filedialog, ttk, messagebox
 from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 import numpy as np
 import os
+import re
+import matplotlib.pyplot as plt
 
 # ===============================
 # FUNÇÕES PRINCIPAIS
@@ -108,13 +111,92 @@ def gerar_gcode():
 
             for x in x_range:
                 z = -alturas[y, x]  # negativo = descer
-                f.write(f"G1 X{x*passo:.3f} Y{y*passo:.3f} Z{z:.3f}\n")
+                f.write(f"G1 X{x*passo:.3f} Y{y*passo:.3f} Z{z:.3f} F1500\n")
             f.write("G0 Z5\n")  # sobe a ferramenta após cada linha
 
         f.write("G0 Z10\nG0 X0 Y0\nM30 ; Fim do programa\n")
 
     lbl_status.config(text=f"G-code salvo: {os.path.basename(caminho_gcode)}")
     messagebox.showinfo("Sucesso", "G-code gerado com sucesso!")
+
+    # Chama análise automaticamente
+    analisar_gcode(caminho_gcode)
+
+
+# ===============================
+# ANÁLISE DE G-CODE
+# ===============================
+
+def analisar_gcode(caminho_arquivo):
+    """Analisa o G-code gerado e exibe estatísticas e gráficos"""
+    total_linhas = 0
+    movimentos_g0 = 0
+    movimentos_g1 = 0
+    velocidades = []
+    alturas_z = []
+
+    with open(caminho_arquivo, "r") as f:
+        for linha in f:
+            linha = linha.strip()
+            if not linha or linha.startswith(";"):
+                continue
+
+            total_linhas += 1
+
+            if linha.startswith("G0") or linha.startswith("G1"):
+                if linha.startswith("G0"):
+                    movimentos_g0 += 1
+                else:
+                    movimentos_g1 += 1
+
+                # Captura velocidade F
+                match_f = re.search(r'F([\d.]+)', linha)
+                if match_f:
+                    velocidades.append(float(match_f.group(1)))
+
+                # Captura altura Z
+                match_z = re.search(r'Z(-?[\d.]+)', linha)
+                if match_z:
+                    alturas_z.append(float(match_z.group(1)))
+
+    velocidade_max = max(velocidades) if velocidades else 0
+    velocidade_min = min(velocidades) if velocidades else 0
+    velocidade_media = sum(velocidades)/len(velocidades) if velocidades else 0
+    altura_max = max(alturas_z) if alturas_z else 0
+    altura_min = min(alturas_z) if alturas_z else 0
+
+    print("\n===== Resumo do G-code =====")
+    print(f"Total de linhas: {total_linhas}")
+    print(f"Movimentos G0 (rápidos): {movimentos_g0}")
+    print(f"Movimentos G1 (impressão): {movimentos_g1}")
+    print(f"Velocidade máxima (F): {velocidade_max}")
+    print(f"Velocidade mínima (F): {velocidade_min}")
+    print(f"Velocidade média (F): {velocidade_media:.2f}")
+    print(f"Altura máxima (Z): {altura_max}")
+    print(f"Altura mínima (Z): {altura_min}")
+
+    # =========================
+    # Gráficos de velocidade e altura
+    # =========================
+    if velocidades and alturas_z:
+        plt.figure(figsize=(12,5))
+
+        # Gráfico de velocidade
+        plt.subplot(1,2,1)
+        plt.plot(velocidades, color='blue')
+        plt.title("Velocidade F ao longo das linhas")
+        plt.xlabel("Linha do G-code")
+        plt.ylabel("Velocidade (F)")
+
+        # Gráfico de altura Z
+        plt.subplot(1,2,2)
+        plt.plot(alturas_z, color='green')
+        plt.title("Altura Z ao longo das linhas")
+        plt.xlabel("Linha do G-code")
+        plt.ylabel("Altura (Z)")
+
+        plt.tight_layout()
+        plt.show()
 
 
 # ===============================
