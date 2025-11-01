@@ -35,15 +35,6 @@ class GCodeGUI:
         frame_gerar = ttk.LabelFrame(self.janela, text="🎨 Gerar G-code a partir de imagem", padding=15)
         frame_gerar.pack(padx=10, pady=10, fill="x")
         
-        # No frame_gerar, adicione temporariamente:
-btn_debug = ttk.Button(
-    frame_gerar,
-    text="🐛 Debug HTML",
-    command=self._debug_exportar_html,
-    width=25
-)
-btn_debug.pack(pady=5)
-        
         # Botão carregar imagem
         btn_carregar = ttk.Button(frame_gerar, text="📂 Carregar Imagem", command=self._carregar_imagem, width=25)
         btn_carregar.pack(pady=5)
@@ -146,28 +137,6 @@ btn_debug.pack(pady=5)
         if caminho:
             self.lbl_status_analise.config(text=f"G-code selecionado: {os.path.basename(caminho)}")
             self.analisador.analisar_gcode(caminho)
-            
-    def _debug_exportar_html(self):"""Método de debug para testar a exportação HTML"""
-    try:
-        # Força a criação de dados de teste
-        if self.gerador.altura_data is None:
-            # Cria dados de exemplo
-            self.gerador.altura_data = [
-                [0, 1, 2, 1, 0],
-                [1, 2, 3, 2, 1],
-                [2, 3, 4, 3, 2],
-                [1, 2, 3, 2, 1],
-                [0, 1, 2, 1, 0]
-            ]
-        
-        print("🔍 DEBUG: Tentando exportar HTML...")
-        print(f"📊 Dados: {len(self.gerador.altura_data)}x{len(self.gerador.altura_data[0])}")
-        
-        resultado = self.gerador.exportar_simulador_html()
-        print(f"✅ Resultado: {resultado}")
-        
-    except Exception as e:
-        print(f"❌ Erro no debug: {e}")
     
     def executar(self):
         """Inicia a aplicação"""
