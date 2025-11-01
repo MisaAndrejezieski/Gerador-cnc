@@ -137,6 +137,29 @@ class GCodeGUI:
         if caminho:
             self.lbl_status_analise.config(text=f"G-code selecionado: {os.path.basename(caminho)}")
             self.analisador.analisar_gcode(caminho)
+            
+    def _debug_exportar_html(self):
+    """Método de debug para testar a exportação HTML"""
+    try:
+        # Força a criação de dados de teste
+        if self.gerador.altura_data is None:
+            # Cria dados de exemplo
+            self.gerador.altura_data = [
+                [0, 1, 2, 1, 0],
+                [1, 2, 3, 2, 1],
+                [2, 3, 4, 3, 2],
+                [1, 2, 3, 2, 1],
+                [0, 1, 2, 1, 0]
+            ]
+        
+        print("🔍 DEBUG: Tentando exportar HTML...")
+        print(f"📊 Dados: {len(self.gerador.altura_data)}x{len(self.gerador.altura_data[0])}")
+        
+        resultado = self.gerador.exportar_simulador_html()
+        print(f"✅ Resultado: {resultado}")
+        
+    except Exception as e:
+        print(f"❌ Erro no debug: {e}")
     
     def executar(self):
         """Inicia a aplicação"""
