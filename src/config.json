@@ -1,0 +1,23 @@
+{
+    "configuracoes": {
+        "passo_padrao": 1.0,
+        "velocidade_padrao": 1500,
+        "altura_seguranca": 5,
+        "velocidade_maxima": 3000,
+        "resolucao_preview": 400
+    },
+    "cores_alturas": {
+        "branco": [255, 255, 255, 0],
+        "amarelo": [255, 255, 0, 1],
+        "verde": [0, 255, 0, 2],
+        "azul": [0, 0, 255, 3],
+        "roxo": [128, 0, 128, 4],
+        "vermelho": [255, 0, 0, 5],
+        "preto": [0, 0, 0, 6]
+    },
+    "interface": {
+        "largura_janela": 500,
+        "altura_janela": 700,
+        "redimensionavel": false
+    }
+}
