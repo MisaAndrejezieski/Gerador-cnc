@@ -9,6 +9,44 @@ from PIL import Image, ImageTk
 import json
 from visualizador_3d import Visualizador3D
 
+# NO INÍCIO DO ARQUIVO, APÓS OS OUTROS IMPORTS
+import sys
+import os
+
+# Adiciona o diretório atual ao path para garantir as importações
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+try:
+    from visualizador_3d import Visualizador3D
+    VISUALIZADOR_DISPONIVEL = True
+    print("✓ Visualizador3D importado com sucesso")
+except ImportError as e:
+    print(f"✗ Visualizador3D não disponível: {e}")
+    VISUALIZADOR_DISPONIVEL = False
+    
+    # Classe dummy para não quebrar o código
+    class Visualizador3D:
+        def __init__(self, parent):
+            self.parent = parent
+        def plot_gcode(self, gcode_text):
+            import tkinter as tk
+            from tkinter import messagebox
+            messagebox.showwarning("Visualizador Não Disponível", 
+                                 "Instale as dependências:\nmatplotlib, numpy, Pillow, opencv-python")
+
+# NO INÍCIO DO ARQUIVO, APÓS OS OUTROS IMPORTS
+try:
+    from .visualizador_3d import Visualizador3D
+    print("✓ Visualizador3D importado com sucesso")
+except ImportError as e:
+    print(f"✗ Erro na importação do Visualizador3D: {e}")
+    # Define uma classe vazia para evitar erros
+    class Visualizador3D:
+        def __init__(self, parent):
+            print("Visualizador3D não disponível - instala as dependências")
+        def plot_gcode(self, gcode_text):
+            print("Visualizador3D não disponível")
+
 try:
     from .visualizador_3d import Visualizador3D
 except ImportError:
