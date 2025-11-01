@@ -1,4 +1,7 @@
-matplotlib>=3.5.0
-numpy>=1.21.0
-Pillow>=9.0.0
-opencv-python>=4.5.0
+# GERADOR E ANALISADOR DE G-CODE CNC
+# Dependências principais para funcionamento completo
+
+matplotlib>=3.5.0          # Visualização 2D/3D e gráficos
+numpy>=1.21.0              # Processamento numérico e arrays
+Pillow>=9.0.0              # Processamento e exibição de imagens
+opencv-python>=4.5.0       # Processamento de imagem avançado
