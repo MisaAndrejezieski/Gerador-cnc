@@ -9,16 +9,16 @@
         "limiar_preto_branco": 128
     },
     "analisador": {
-        "tolerancia_flutuante": 1e-4
+        "tolerancia_flutuante": 0.0001
     },
     "visualizador": {
         "cor_g0": "#888888",
         "cor_g1": "#007acc",
-        "escala_plotagem": 1.0 
+        "escala_plotagem": 1.0
     },
     "gui": {
         "tamanho_janela": "1200x800",
-        "last_dir": "."
+        "last_dir": "D:/Gerando g-code/Gerador-cnc/Images"
     },
     "log": {
         "nivel": "INFO",
