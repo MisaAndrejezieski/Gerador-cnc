@@ -7,10 +7,10 @@ import tempfile
 import os
 import sys
 
-# Adiciona o diretório src ao path para importações
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+# Adiciona o diretório raiz ao path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from analisador import AnalisadorGCode
+from gerador_analisador.analisador import AnalisadorGCode
 
 class TestAnalisadorGCode(unittest.TestCase):
     """Test cases para a classe AnalisadorGCode"""
