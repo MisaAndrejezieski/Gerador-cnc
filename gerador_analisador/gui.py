@@ -6,6 +6,8 @@ import tkinter as tk
 from tkinter import filedialog, ttk, messagebox
 import os
 from PIL import Image, ImageTk
+# NO INÍCIO DO ARQUIVO, APÓS OS OUTROS IMPORTS
+from visualizador_3d import Visualizador3D
 import json
 
 # Importações locais - CORRIGIDAS
