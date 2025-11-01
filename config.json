@@ -1,7 +1,24 @@
 {
-    "configuracoes": {
-        "passo_padrao": 1.0,
-        "velocidade_padrao": 1500,
-        "altura_seguranca": 5
-    }
+  "aplicacao": {
+    "nome": "Gerador e Analisador de G-code CNC",
+    "versao": "1.0.0",
+    "autor": "Seu Nome"
+  },
+  "visualizador_3d": {
+    "tamanho_figura": [10, 8],
+    "elevacao": 30,
+    "azimute": 45,
+    "cor_movimento_rapido": "red",
+    "cor_movimento_trabalho": "blue"
+  },
+  "gerador": {
+    "passo_padrao": 1.0,
+    "unidades": "G21",
+    "altura_segura": 5.0,
+    "velocidade_avanco": 1000
+  },
+  "interface": {
+    "tamanho_janela": "500x650",
+    "tamanho_maximo_imagem": [800, 600]
+  }
 }
