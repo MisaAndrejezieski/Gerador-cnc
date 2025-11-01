@@ -1,3 +1,5 @@
-numpy
-pillow
-matplotlib
+# Dependências do projeto Gerador CNC
+Pillow>=10.0.0
+numpy>=1.24.0
+matplotlib>=3.7.0
+tkinter  # Geralmente incluído no Python
