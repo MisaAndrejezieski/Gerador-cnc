@@ -10,7 +10,9 @@ import os
 from PIL import Image, ImageTk
 import json
 
-from gerador_analisador import GeradorGCode, AnalisadorGCode
+# Importações locais corrigidas
+from .gerador import GeradorGCode
+from .analisador import AnalisadorGCode
 
 class GCodeGUI:
     """
