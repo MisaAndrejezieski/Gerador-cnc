@@ -1,9 +1,8 @@
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import re
-import json
-import os
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib
 matplotlib.use('TkAgg')
@@ -128,31 +127,5 @@ class Visualizador3D:
         # Configura grade
         self.ax.grid(True, alpha=0.3)
         
-        # Ajusta limites para melhor visualização
-        all_coords = np.array([coord['pos'] for coord in coordinates])
-        if len(all_coords) > 0:
-            max_range = max(
-                all_coords[:, 0].max() - all_coords[:, 0].min(),
-                all_coords[:, 1].max() - all_coords[:, 1].min(),
-                all_coords[:, 2].max() - all_coords[:, 2].min()
-            ) * 0.5
-            
-            mid_x = (all_coords[:, 0].max() + all_coords[:, 0].min()) * 0.5
-            mid_y = (all_coords[:, 1].max() + all_coords[:, 1].min()) * 0.5
-            mid_z = (all_coords[:, 2].max() + all_coords[:, 2].min()) * 0.5
-            
-            self.ax.set_xlim(mid_x - max_range, mid_x + max_range)
-            self.ax.set_ylim(mid_y - max_range, mid_y + max_range)
-            self.ax.set_zlim(mid_z - max_range, mid_z + max_range)
-        
-        self.canvas.draw()
-    
-    def clear_plot(self):
-        """Limpa o gráfico"""
-        self.ax.clear()
-        self.ax.set_xlabel('Eixo X (mm)')
-        self.ax.set_ylabel('Eixo Y (mm)')
-        self.ax.set_zlabel('Eixo Z (mm)')
-        self.ax.set_title('Visualização 3D do G-code CNC')
         self.canvas.draw()
         
