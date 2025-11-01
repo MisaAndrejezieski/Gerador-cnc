@@ -7,9 +7,17 @@ Funcionalidades:
 - Análise e validação de G-code existente (AnalisadorGCode)
 - Interface gráfica integrada
 - Simulador 3D em HTML
+
+Classes principais:
+    GeradorGCode: Converte imagens em G-code
+    AnalisadorGCode: Analisa e valida arquivos G-code
+
+Exemplo de uso:
+    >>> from gerador_analisador import GeradorGCode, AnalisadorGCode
+    >>> gerador = GeradorGCode()
+    >>> analisador = AnalisadorGCode()
 """
 
-# Importações relativas corretas
 from .gerador import GeradorGCode, cor_para_altura
 from .analisador import AnalisadorGCode
 
