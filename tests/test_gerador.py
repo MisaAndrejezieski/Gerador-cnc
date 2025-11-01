@@ -5,12 +5,12 @@ Testes unitários para o módulo GeradorGCode
 import unittest
 import os
 import tempfile
-from PIL import Image
+import sys
 import numpy as np
 
-# Importa o módulo a ser testado
-import sys
-sys.path.append('src')
+# Adiciona o diretório src ao path para importações
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 from gerador import GeradorGCode, cor_para_altura
 
 class TestGeradorGCode(unittest.TestCase):
@@ -47,8 +47,8 @@ class TestGeradorGCode(unittest.TestCase):
         
     def tearDown(self):
         """Limpeza após testes"""
-        # Remove arquivos temporários se existirem
-        pass
+        import shutil
+        shutil.rmtree(self.temp_dir)
 
 if __name__ == '__main__':
     unittest.main()
