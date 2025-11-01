@@ -6,12 +6,11 @@ import unittest
 import os
 import tempfile
 import sys
-import numpy as np
 
-# Adiciona o diretório src ao path para importações
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+# Adiciona o diretório raiz ao path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from gerador import GeradorGCode, cor_para_altura
+from gerador_analisador.gerador import GeradorGCode, cor_para_altura
 
 class TestGeradorGCode(unittest.TestCase):
     """Test cases para a classe GeradorGCode"""
