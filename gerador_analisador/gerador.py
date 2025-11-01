@@ -169,139 +169,258 @@ class GeradorGCode:
             return False
 
     def exportar_simulador_html(self, caminho_saida=None):
-        """
-        Exporta um simulador 3D em HTML para visualização da usinagem.
+    """Exporta simulador 3D em HTML"""
+    if self.altura_data is None:
+        messagebox.showwarning("Aviso", "Processe a imagem antes de exportar o simulador!")
+        return False
         
-        Args:
-            caminho_saida (str): Caminho para salvar o HTML. Se None, usa padrão.
-            
-        Returns:
-            bool: True se exportou com sucesso, False caso contrário
-        """
-        if self.altura_data is None:
-            messagebox.showwarning("Aviso", "Processe a imagem antes de exportar o simulador!")
+    # CORREÇÃO: Define caminho padrão de forma mais robusta
+    if caminho_saida is None:
+        # Cria a pasta 'images' no mesmo diretório do script
+        pasta_atual = os.path.dirname(os.path.abspath(__file__))
+        pasta_raiz = os.path.dirname(pasta_atual)  # Volta um nível
+        pasta_imagens = os.path.join(pasta_raiz, "images")
+        
+        # Cria a pasta se não existir
+        try:
+            os.makedirs(pasta_imagens, exist_ok=True)
+            print(f"📁 Pasta criada: {pasta_imagens}")  # Debug
+        except Exception as e:
+            messagebox.showerror("Erro", f"Falha ao criar pasta: {e}")
             return False
             
-        # Define caminho padrão se não especificado
-        if caminho_saida is None:
-            pasta_imagens = os.path.join(os.getcwd(), "images")
-            os.makedirs(pasta_imagens, exist_ok=True)
-            caminho_saida = os.path.join(pasta_imagens, "simulador_3d.html")
+        caminho_saida = os.path.join(pasta_imagens, "simulador_3d.html")
 
-        html_template = f"""<!DOCTYPE html>
+    # CORREÇÃO: Template HTML simplificado e testado
+    html_template = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador 3D - Usinagem CNC</title>
     <style>
-        body {{ margin: 0; overflow: hidden; background: #f0f0f0; }}
+        body {{ 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background: #1e1e1e;
+            font-family: Arial, sans-serif;
+        }}
         #info {{ 
             position: absolute; 
             top: 10px; 
             left: 10px; 
-            background: rgba(0,0,0,0.7); 
+            background: rgba(0,0,0,0.8); 
             color: white; 
-            padding: 10px; 
-            border-radius: 5px;
-            font-family: Arial, sans-serif;
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 100;
+            max-width: 300px;
+        }}
+        #info h3 {{ margin: 0 0 10px 0; color: #4CAF50; }}
+        #info p {{ margin: 5px 0; font-size: 14px; }}
+        #loading {{ 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            color: white; 
+            font-size: 18px; 
+            z-index: 1000;
         }}
     </style>
 </head>
 <body>
     <div id="info">
-        <h3>Simulador 3D - Usinagem</h3>
-        <p>Use o mouse para rotacionar e o scroll para zoom</p>
+        <h3>🔧 Simulador 3D - Usinagem CNC</h3>
+        <p>🖱️ <strong>Controles:</strong></p>
+        <p>• Mouse esquerdo: Rotacionar</p>
+        <p>• Mouse direito: Mover</p>
+        <p>• Scroll: Zoom</p>
+        <p>• Duplo clique: Resetar câmera</p>
+        <p>📐 <strong>Dados:</strong></p>
+        <p>• Dimensões: {len(self.altura_data)}x{len(self.altura_data[0])} pontos</p>
+        <p>• Passo: {self.passo} mm</p>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.153.0/examples/js/controls/OrbitControls.js"></script>
+
+    <div id="loading">Carregando simulador 3D...</div>
+
+    <!-- Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
     
     <script>
-        // Dados de altura da usinagem
+        // Remove loading message when page loads
+        window.addEventListener('load', function() {{
+            document.getElementById('loading').style.display = 'none';
+        }});
+
+        // Dados da usinagem
         const alturaData = {json.dumps(self.altura_data)};
         const passo = {self.passo};
         
-        // Configuração da cena
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xf0f0f0);
-        
-        const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({{antialias: true}});
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
-        
-        // Iluminação
-        const light1 = new THREE.DirectionalLight(0xffffff, 0.8);
-        light1.position.set(1, 1, 1);
-        scene.add(light1);
-        
-        const light2 = new THREE.AmbientLight(0xffffff, 0.4);
-        scene.add(light2);
-        
-        // Cria malha da superfície usinada
-        const rows = alturaData.length;
-        const cols = alturaData[0].length;
-        const geometry = new THREE.PlaneGeometry(cols * passo, rows * passo, cols-1, rows-1);
-        
-        // Aplica alturas aos vértices
-        for(let i = 0; i < geometry.attributes.position.count; i++) {{
-            const x = i % cols;
-            const y = Math.floor(i / cols);
-            geometry.attributes.position.setZ(i, alturaData[y][x] * 2); // Amplifica altura para visualização
-        }}
-        
-        geometry.computeVertexNormals();
-        
-        const material = new THREE.MeshPhongMaterial({{
-            color: 0x0080ff,
-            side: THREE.DoubleSide,
-            flatShading: true
+        console.log('📊 Dados carregados:', {{
+            linhas: alturaData.length,
+            colunas: alturaData[0].length,
+            passo: passo
         }});
+
+        // Cena principal
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x2c3e50);
         
-        const plane = new THREE.Mesh(geometry, material);
-        scene.add(plane);
-        plane.rotation.x = -Math.PI / 2;
+        // Câmera
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({{ antialias: true }});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // Iluminação
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+        scene.add(ambientLight);
         
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(50, 50, 50);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+
+        const pointLight = new THREE.PointLight(0x4CAF50, 0.5, 100);
+        pointLight.position.set(-25, 25, -25);
+        scene.add(pointLight);
+
+        // Criar geometria da superfície usinada
+        function criarSuperficieUsinada() {{
+            const rows = alturaData.length;
+            const cols = alturaData[0].length;
+            
+            // Geometria para a superfície
+            const geometry = new THREE.PlaneGeometry(cols * passo, rows * passo, cols - 1, rows - 1);
+            const vertices = geometry.attributes.position;
+            
+            // Aplicar alturas aos vértices
+            for (let i = 0; i < vertices.count; i++) {{
+                const x = i % cols;
+                const y = Math.floor(i / cols);
+                
+                if (y < rows && x < cols) {{
+                    // Amplificar a altura para melhor visualização
+                    const altura = alturaData[y][x] * 3;
+                    vertices.setZ(i, altura);
+                }}
+            }}
+            
+            geometry.computeVertexNormals();
+            
+            // Material com cor baseada na altura
+            const material = new THREE.MeshPhongMaterial({{
+                color: 0x2196F3,
+                shininess: 30,
+                flatShading: false,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.9
+            }});
+            
+            const mesh = new THREE.Mesh(geometry, material);
+            mesh.rotation.x = -Math.PI / 2; // Rotacionar para ficar horizontal
+            
+            return mesh;
+        }}
+
+        // Criar grade de referência
+        function criarGrade() {{
+            const rows = alturaData.length;
+            const cols = alturaData[0].length;
+            const size = Math.max(rows, cols) * passo;
+            
+            const gridHelper = new THREE.GridHelper(size, 20, 0x666666, 0x444444);
+            gridHelper.position.y = -0.1;
+            return gridHelper;
+        }}
+
+        // Criar eixos de referência
+        function criarEixos() {{
+            const size = Math.max(alturaData.length, alturaData[0].length) * passo * 0.5;
+            const axesHelper = new THREE.AxesHelper(size);
+            return axesHelper;
+        }}
+
+        // Adicionar objetos à cena
+        const superficie = criarSuperficieUsinada();
+        scene.add(superficie);
+        
+        const grade = criarGrade();
+        scene.add(grade);
+        
+        const eixos = criarEixos();
+        scene.add(eixos);
+
         // Controles de câmera
         const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 10;
+        controls.maxDistance = 500;
+        controls.maxPolarAngle = Math.PI;
+
+        // Posicionar câmera
+        const rows = alturaData.length;
+        const cols = alturaData[0].length;
+        camera.position.set(cols * passo * 0.7, rows * passo * 0.7, cols * passo * 0.7);
         controls.target.set(cols * passo / 2, 0, rows * passo / 2);
         controls.update();
-        
-        // Posiciona câmera
-        camera.position.set(cols * passo / 2, rows * passo, rows * passo * 1.5);
-        camera.lookAt(cols * passo / 2, 0, rows * passo / 2);
-        
-        // Helper axes
-        const axesHelper = new THREE.AxesHelper(Math.max(rows, cols) * passo);
-        scene.add(axesHelper);
-        
-        // Grade de referência
-        const gridHelper = new THREE.GridHelper(Math.max(rows, cols) * passo, 10);
-        scene.add(gridHelper);
-        
+
         // Animação
         function animate() {{
             requestAnimationFrame(animate);
+            controls.update();
             renderer.render(scene, camera);
         }}
-        animate();
-        
+
         // Redimensionamento
-        window.addEventListener('resize', () => {{
+        window.addEventListener('resize', function() {{
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }});
+
+        // Duplo clique para resetar câmera
+        window.addEventListener('dblclick', function() {{
+            controls.reset();
+        }});
+
+        // Iniciar animação
+        animate();
+
+        console.log('✅ Simulador 3D carregado com sucesso!');
     </script>
 </body>
 </html>"""
+    
+    try:
+        with open(caminho_saida, "w", encoding="utf-8") as f:
+            f.write(html_template)
         
-        try:
-            with open(caminho_saida, "w", encoding="utf-8") as f:
-                f.write(html_template)
-            messagebox.showinfo("Sucesso", f"Simulador 3D exportado para:\n{caminho_saida}")
-            return True
-        except Exception as e:
-            messagebox.showerror("Erro", f"Falha ao exportar simulador: {e}")
-            return False
+        # CORREÇÃO: Mensagem mais informativa
+        mensagem = f"""✅ Simulador 3D exportado com sucesso!
+
+📁 Local: {caminho_saida}
+📊 Dimensões: {len(self.altura_data)}x{len(self.altura_data[0])} pontos
+🔧 Passo: {self.passo} mm
+
+Para visualizar:
+1. Abra o arquivo HTML em seu navegador
+2. Use o mouse para navegar no modelo 3D
+3. Scroll para zoom, arraste para rotacionar"""
+
+        messagebox.showinfo("Sucesso", mensagem)
+        print(f"📄 HTML gerado em: {caminho_saida}")  # Debug no console
+        return True
         
+    except Exception as e:
+        error_msg = f"Falha ao salvar simulador HTML:\n{str(e)}"
+        messagebox.showerror("Erro", error_msg)
+        print(f"❌ Erro ao gerar HTML: {e}")  # Debug no console
+        return False
