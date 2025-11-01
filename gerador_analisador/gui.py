@@ -35,6 +35,15 @@ class GCodeGUI:
         frame_gerar = ttk.LabelFrame(self.janela, text="🎨 Gerar G-code a partir de imagem", padding=15)
         frame_gerar.pack(padx=10, pady=10, fill="x")
         
+        # No frame_gerar, adicione temporariamente:
+btn_debug = ttk.Button(
+    frame_gerar,
+    text="🐛 Debug HTML",
+    command=self._debug_exportar_html,
+    width=25
+)
+btn_debug.pack(pady=5)
+        
         # Botão carregar imagem
         btn_carregar = ttk.Button(frame_gerar, text="📂 Carregar Imagem", command=self._carregar_imagem, width=25)
         btn_carregar.pack(pady=5)
