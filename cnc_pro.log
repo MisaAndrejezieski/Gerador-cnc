@@ -1,1 +1,106 @@
 2025-11-01 20:06:42,176 - CNC_PRO - INFO - Aplicação CNC Pro inicializada.
+2025-11-01 21:40:59,088 - CNC_PRO.Visualizador - ERROR - Erro ao gerar plotagem 3D: 
+Traceback (most recent call last):
+  File "d:\Gerando g-code\Gerador-cnc\gerador_analisador\visualizador_3d.py", line 87, in gerar_plotagem_3d
+    ax.plot(xs, ys, zs, color=color_g1, linestyle='-', linewidth=1.5, alpha=1.0)
+  File "D:\Gerando g-code\Gerador-cnc\.venv\Lib\site-packages\mpl_toolkits\mplot3d\axes3d.py", line 1986, in plot
+    lines = super().plot(xs, ys, *args, **kwargs)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Gerando g-code\Gerador-cnc\.venv\Lib\site-packages\matplotlib\axes\_axes.py", line 1777, in plot
+    lines = [*self._get_lines(self, *args, data=data, **kwargs)]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Gerando g-code\Gerador-cnc\.venv\Lib\site-packages\matplotlib\axes\_base.py", line 297, in __call__
+    yield from self._plot_args(
+               ^^^^^^^^^^^^^^^^
+  File "D:\Gerando g-code\Gerador-cnc\.venv\Lib\site-packages\matplotlib\axes\_base.py", line 546, in _plot_args
+    return [l[0] for l in result]
+                          ^^^^^^
+  File "D:\Gerando g-code\Gerador-cnc\.venv\Lib\site-packages\matplotlib\axes\_base.py", line 539, in <genexpr>
+    result = (make_artist(axes, x[:, j % ncx], y[:, j % ncy], kw,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Gerando g-code\Gerador-cnc\.venv\Lib\site-packages\matplotlib\axes\_base.py", line 338, in _make_line
+    seg = mlines.Line2D(x, y, **kw)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Gerando g-code\Gerador-cnc\.venv\Lib\site-packages\matplotlib\lines.py", line 421, in __init__
+    self._internal_update(kwargs)
+  File "D:\Gerando g-code\Gerador-cnc\.venv\Lib\site-packages\matplotlib\artist.py", line 1233, in _internal_update
+    return self._update_props(
+           ^^^^^^^^^^^^^^^^^^^
+  File "D:\Gerando g-code\Gerador-cnc\.venv\Lib\site-packages\matplotlib\artist.py", line 1197, in _update_props
+    with cbook._setattr_cm(self, eventson=False):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MemoryError
+2025-11-01 21:41:00,457 - CNC_PRO.GUI - ERROR - Erro no callback de visualização: 
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "d:\Gerando g-code\Gerador-cnc\gerador_analisador\gui.py", line 342, in _callback_visualizacao
+    fig = future.result()
+          ^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Gerando g-code\Gerador-cnc\gerador_analisador\visualizador_3d.py", line 109, in gerar_plotagem_3d
+    logger.error(f"Erro ao gerar plotagem 3D: {e}", exc_info=True)
+  File "C:\Python312\Lib\logging\__init__.py", line 1568, in error
+    self._log(ERROR, msg, args, **kwargs)
+  File "C:\Python312\Lib\logging\__init__.py", line 1682, in _log
+    record = self.makeRecord(self.name, level, fn, lno, msg, args,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\logging\__init__.py", line 1651, in makeRecord
+    rv = _logRecordFactory(name, level, fn, lno, msg, args, exc_info, func,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\logging\__init__.py", line 332, in __init__
+    self.filename = os.path.basename(pathname)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen ntpath>", line 270, in basename
+MemoryError
+2025-11-01 21:41:00,505 - CNC_PRO.GUI - ERROR - Erro no callback de visualização: 
+MemoryError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "d:\Gerando g-code\Gerador-cnc\gerador_analisador\gui.py", line 342, in _callback_visualizacao
+    fig = future.result()
+          ^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Python312\Lib\concurrent\futures\thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MemoryError
+2025-11-01 21:41:09,499 - CNC_PRO.Visualizador - ERROR - Erro ao gerar plotagem 3D: 
+Traceback (most recent call last):
+  File "d:\Gerando g-code\Gerador-cnc\gerador_analisador\visualizador_3d.py", line 63, in gerar_plotagem_3d
+    x_coords, y_coords, z_coords, move_types = self._parse_gcode_para_trajetoria(gcode_lines)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Gerando g-code\Gerador-cnc\gerador_analisador\visualizador_3d.py", line 52, in _parse_gcode_para_trajetoria
+    x_coords.append(x)
+MemoryError
+2025-11-01 21:41:09,917 - CNC_PRO.Visualizador - ERROR - Erro ao gerar plotagem 3D: 
+Traceback (most recent call last):
+  File "d:\Gerando g-code\Gerador-cnc\gerador_analisador\visualizador_3d.py", line 63, in gerar_plotagem_3d
+    x_coords, y_coords, z_coords, move_types = self._parse_gcode_para_trajetoria(gcode_lines)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "d:\Gerando g-code\Gerador-cnc\gerador_analisador\visualizador_3d.py", line 53, in _parse_gcode_para_trajetoria
+    y_coords.append(y)
+MemoryError
+2025-11-01 21:41:12,850 - CNC_PRO.Analisador - ERROR - Falha ao ler G-code na linha 127922: 
+Traceback (most recent call last):
+  File "d:\Gerando g-code\Gerador-cnc\gerador_analisador\analisador.py", line 48, in analisar_gcode
+    self._atualizar_estatisticas(estatisticas, resultado, numero_linha)
+  File "d:\Gerando g-code\Gerador-cnc\gerador_analisador\analisador.py", line 146, in _atualizar_estatisticas
+    if eixo == 'X': estatisticas['coordenadas_x'].append(valor)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+MemoryError
